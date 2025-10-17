@@ -31,12 +31,35 @@ def doAdd(addr, debug=False):
         print(json.loads(response.text))
 
 def doDotProduct(addr, debug=False):
-    pass
+    headers = {'content-type': 'application/json'}
+    a = [random.random() for _ in range(100)]
+    b = [random.random() for _ in range(100)]
+    payload = {'a': a, 'b': b}
+    url = addr + '/api/dotproduct'
+    response = requests.post(url, json=payload, headers=headers)
+    if debug:
+        print("Response is", response)
+        try:
+            print(json.loads(response.text))
+        except json.JSONDecodeError:
+            print(response.text)
 
 def doJsonImage(addr, debug=False):
-    pass
+    headers = {'content-type': 'application/json'}
+    with open('Flatirons_Winter_Sunrise_edit_2.jpg', 'rb') as f:
+        img_bytes = f.read()
+    img_b64 = base64.b64encode(img_bytes).decode('utf-8')
+    payload = {'image': img_b64}
+    url = addr + '/api/jsonimage'
+    response = requests.post(url, json=payload, headers=headers)
+    if debug:
+        print("Response is", response)
+        try:
+            print(json.loads(response.text))
+        except json.JSONDecodeError:
+            print(response.text)
 
-if len(sys.argv) < 3:
+if len(sys.argv) < 4:
     print(f"Usage: {sys.argv[0]} <server ip> <cmd> <reps>")
     print(f"where <cmd> is one of add, rawImage, sum or jsonImage")
     print(f"and <reps> is the integer number of repititions for measurement")

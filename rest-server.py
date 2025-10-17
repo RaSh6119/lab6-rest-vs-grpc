@@ -53,12 +53,45 @@ def rawimage():
 
 @app.route('/api/dotproduct', methods=['POST'])
 def dotproduct():
-    pass
+    r = request
+    try:
+        data = r.get_json(force=True)
+        a = data.get('a', [])
+        b = data.get('b', [])
+        if not isinstance(a, list) or not isinstance(b, list):
+            raise ValueError("Inputs 'a' and 'b' must be lists.")
+        if len(a) != len(b):
+            raise ValueError("Vectors must be the same length.")
+        for i, (x, y) in enumerate(zip(a, b)):
+            if not isinstance(x, (int, float)) or not isinstance(y, (int, float)):
+                raise ValueError(f"Non-numeric value at index {i}: a={x}, b={y}")
+        dot_prod = sum(x * y for x, y in zip(a, b))
+        response = {'dotproduct': dot_prod}
+    except Exception as e:
+        response = {'error': str(e)}
+        return Response(response=jsonpickle.encode(response), status=400, mimetype="application/json")
+    return Response(response=jsonpickle.encode(response), status=200, mimetype="application/json")
 
-# route http posts to this method
 @app.route('/api/jsonimage', methods=['POST'])
 def jsonimage():
-    pass
+    r = request
+    try:
+        data = r.get_json(force=True)
+        img_b64 = data.get('image')
+        if not isinstance(img_b64, str) or not img_b64:
+            raise ValueError("Missing or invalid 'image' (base64 string) in JSON payload.")
+        img_bytes = base64.b64decode(img_b64)
+        ioBuffer = io.BytesIO(img_bytes)
+        img = Image.open(ioBuffer)
+        response = {
+            'width': img.size[0],
+            'height': img.size[1]
+        }
+        status = 200
+    except Exception as e:
+        response = {'width': 0, 'height': 0, 'error': str(e)}
+        status = 200
+    return Response(response=jsonpickle.encode(response), status=status, mimetype="application/json")
 
 # start flask app
 app.run(host="0.0.0.0", port=5000)
